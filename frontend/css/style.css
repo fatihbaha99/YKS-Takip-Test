@@ -1,0 +1,331 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 1.5rem; margin-bottom: 20px; color: #1a1a2e; }
+h2 { font-size: 1.2rem; margin-bottom: 16px; color: #1a1a2e; }
+
+input, select, button {
+  font-size: 1rem;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus { border-color: #4a6cf7; }
+
+button {
+  background: #4a6cf7;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+button:hover { background: #3b5ce7; }
+button.secondary { background: #6c757d; }
+button.secondary:hover { background: #5a6268; }
+button.danger { background: #dc3545; }
+button.danger:hover { background: #c82333; }
+button.success { background: #28a745; }
+button.success:hover { background: #218838; }
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.hidden { display: none !important; }
+
+.navbar {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand { font-size: 1.2rem; font-weight: 700; }
+
+.navbar-links a {
+  color: #ccc;
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.navbar-links a:hover { color: #fff; }
+
+.auth-container {
+  max-width: 400px;
+  margin: 60px auto;
+}
+
+.auth-card { text-align: center; }
+.auth-card .form-group { text-align: left; }
+
+.auth-toggle {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #4a6cf7;
+  cursor: pointer;
+}
+
+.auth-toggle:hover { text-decoration: underline; }
+
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.todo-item:last-child { border-bottom: none; }
+
+.todo-info {
+  flex: 1;
+}
+
+.todo-subject {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.todo-topic {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.todo-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.badge-goz { background: #e3f2fd; color: #1565c0; }
+.badge-test { background: #fff3e0; color: #e65100; }
+.badge-genel { background: #fce4ec; color: #c62828; }
+
+.study-form { margin-top: 24px; }
+
+.star-rating {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.star-rating .star {
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.star-rating .star.active { color: #ffc107; }
+
+.test-inputs {
+  display: flex;
+  gap: 12px;
+}
+
+.test-inputs input {
+  width: 100px;
+}
+
+.net-result {
+  margin-top: 8px;
+  font-weight: 600;
+  color: #4a6cf7;
+}
+
+.message {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.message.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+.profile-info p {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.profile-info strong { color: #555; }
+
+.activation-code {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #4a6cf7;
+  text-align: center;
+  padding: 16px;
+  background: #f0f2ff;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cal-header button {
+  background: none;
+  border: 1px solid #ddd;
+  color: #333;
+  font-size: 1.5rem;
+  padding: 4px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cal-header button:hover { background: #f0f2f5; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-day-name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #888;
+  padding: 8px 0;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.cal-day:hover { background: #e8ecf4; }
+.cal-day.other-month { color: #ccc; }
+.cal-day.today { font-weight: 700; background: #e3f2fd; }
+.cal-day.selected { background: #4a6cf7; color: #fff; }
+.cal-day.has-data::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4a6cf7;
+}
+.cal-day.has-todo::after {
+  background: #e65100;
+  box-shadow: 0 0 0 2px #fff3e0;
+}
+.cal-day.has-data.has-todo::after {
+  background: #4a6cf7;
+  box-shadow: none;
+  right: 12px;
+}
+.cal-day.has-data.has-todo::before {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e65100;
+}
+.cal-day.selected.has-data::after,
+.cal-day.selected.has-data::before { background: #fff; }
+
+.cal-section-header {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #555;
+  padding: 12px 0 6px 0;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 4px;
+}
+.cal-section-header:first-child { padding-top: 0; }
+
+.cal-day .day-stats {
+  font-size: 0.6rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.cal-session-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+.cal-session-item:last-child { border-bottom: none; }
+.cal-session-subject { font-weight: 600; font-size: 0.9rem; }
+.cal-session-detail { font-size: 0.85rem; color: #666; margin-top: 4px; }
+
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .navbar { flex-direction: column; gap: 8px; }
+  .navbar-links a { margin: 0 10px; }
+}

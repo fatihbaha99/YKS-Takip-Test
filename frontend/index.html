@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YKS Takip</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar hidden" id="navbar">
+    <div class="navbar-brand">YKS Takip</div>
+    <div class="navbar-links">
+      <a href="#" onclick="showPage('dashboard')">Panel</a>
+      <a href="#" onclick="showPage('calendar')">Takvim</a>
+      <a href="#" onclick="showPage('profile')">Profil</a>
+      <a href="#" onclick="logout()">Çıkış</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div id="auth-page">
+      <div class="auth-container">
+        <div class="card auth-card">
+          <h1>YKS Takip</h1>
+          <p style="color:#666;margin-bottom:20px;">Ders Çalışma Takip Sistemi</p>
+
+          <div id="login-form">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="login-email" placeholder="ornek@email.com">
+            </div>
+            <div class="form-group">
+              <label>Şifre</label>
+              <input type="password" id="login-password" placeholder="••••••••">
+            </div>
+            <button style="width:100%" onclick="login()">Giriş Yap</button>
+            <div class="auth-toggle" onclick="toggleAuth()">Hesabın yok mu? Kayıt ol</div>
+          </div>
+
+          <div id="register-form" class="hidden">
+            <div class="form-group">
+              <label>Ad Soyad</label>
+              <input type="text" id="register-name" placeholder="Adınız Soyadınız">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="register-email" placeholder="ornek@email.com">
+            </div>
+            <div class="form-group">
+              <label>Şifre</label>
+              <input type="password" id="register-password" placeholder="••••••••">
+            </div>
+            <button style="width:100%" onclick="register()">Kayıt Ol</button>
+            <div class="auth-toggle" onclick="toggleAuth()">Zaten hesabın var mı? Giriş yap</div>
+          </div>
+
+          <div id="message-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboard-page" class="hidden">
+      <div class="card">
+        <h2>Bugünün Görevleri (<span id="today-date"></span>)</h2>
+        <div id="todos-list"></div>
+        <p id="no-todos" style="color:#888;text-align:center;padding:20px;">Bugün için görev bulunmuyor.</p>
+      </div>
+
+      <div class="card study-form">
+        <h2>Ders Çalışma Kaydı</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sınav Türü</label>
+            <select id="study-exam" onchange="updateTopics()">
+              <option value="TYT">TYT</option>
+              <option value="AYT">AYT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ders</label>
+            <select id="study-subject" onchange="updateTopics()"></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Konu</label>
+          <select id="study-topic"></select>
+        </div>
+        <div class="form-group">
+          <label>Çalışma Tipi</label>
+          <select id="study-type" onchange="toggleStudyFields()">
+            <option value="goz_gezdir">Göz Gezdirme</option>
+            <option value="test_coz">Test Çözümü</option>
+            <option value="genel_test">Genel Test</option>
+          </select>
+        </div>
+
+        <div id="stars-field" class="form-group">
+          <label>Başarı (1-5 Yıldız)</label>
+          <div class="star-rating" id="star-rating">
+            <span class="star" data-value="1" onclick="setStars(1)">★</span>
+            <span class="star" data-value="2" onclick="setStars(2)">★</span>
+            <span class="star" data-value="3" onclick="setStars(3)">★</span>
+            <span class="star" data-value="4" onclick="setStars(4)">★</span>
+            <span class="star" data-value="5" onclick="setStars(5)">★</span>
+          </div>
+        </div>
+
+        <div id="test-fields" class="form-group hidden">
+          <label>Test Sonuçları</label>
+          <div class="test-inputs">
+            <div>
+              <span style="font-size:0.85rem;color:#28a745;font-weight:600;">Doğru</span>
+              <input type="number" id="test-correct" min="0" value="0" oninput="calculateNet()">
+            </div>
+            <div>
+              <span style="font-size:0.85rem;color:#dc3545;font-weight:600;">Yanlış</span>
+              <input type="number" id="test-wrong" min="0" value="0" oninput="calculateNet()">
+            </div>
+          </div>
+          <div class="net-result" id="net-result">Net: 0.00</div>
+        </div>
+
+        <button onclick="saveStudy()" style="width:100%">Kaydet</button>
+        <div id="study-message" style="margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <div id="calendar-page" class="hidden">
+      <div class="card">
+        <div class="cal-header">
+          <button onclick="calendarPrevMonth()" id="cal-prev">‹</button>
+          <h2 id="cal-title"></h2>
+          <button onclick="calendarNextMonth()" id="cal-next">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card hidden" id="cal-day-detail">
+        <h3 id="cal-day-title"></h3>
+        <div id="cal-day-content"></div>
+      </div>
+    </div>
+
+    <div id="profile-page" class="hidden">
+      <div class="card">
+        <h2>Profil Bilgileri</h2>
+        <div class="profile-info" id="profile-info"></div>
+      </div>
+      <div id="profile-message"></div>
+      <div class="card">
+        <h2>Telegram Bot Aktivasyon</h2>
+        <p style="margin-bottom:12px;color:#666;">Botu aktifleştirmek için aşağıdaki kodu Telegram botuna gönderin.</p>
+        <div class="activation-code" id="activation-code">********</div>
+        <button onclick="generateActivationCode()">Yeni Kod Oluştur</button>
+        <button class="danger" id="disconnect-telegram-btn" style="display:none;margin-top:8px;" onclick="disconnectTelegram()">Telegram Bağlantısını Kes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/subjects.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
