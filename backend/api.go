@@ -27,4 +27,11 @@ func SetupRoutes(app *fiber.App) {
 	protected.Get("/calendar/day", GetDaySessions)
 	protected.Get("/calendar/day/todos", GetDayTodos)
 	protected.Get("/export/excel", DownloadExcel)
+
+	exams := protected.Group("/exams")
+	exams.Post("/", CreateExam)
+	exams.Get("/", ListExams)
+	exams.Get("/subjects", GetExamSubjects)
+	exams.Get("/:id", GetExam)
+	exams.Delete("/:id", DeleteExam)
 }

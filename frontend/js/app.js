@@ -56,7 +56,7 @@ async function register() {
   }
 }
 
-const pageIds = ['dashboard', 'calendar', 'profile'];
+const pageIds = ['dashboard', 'exams', 'calendar', 'profile'];
 
 function logout() {
   localStorage.removeItem('token');
@@ -72,6 +72,7 @@ function showPage(page) {
     document.getElementById(p + '-page').classList.toggle('hidden', p !== page);
   });
   if (page === 'dashboard') loadTodos();
+  if (page === 'exams') renderExamsPage();
   if (page === 'calendar') renderCalendar();
   if (page === 'profile') loadProfile();
 }
@@ -401,6 +402,219 @@ function calendarNextMonth() {
   if (calMonth === 12) { calYear++; calMonth = 1; }
   else calMonth++;
   renderCalendar(calYear, calMonth);
+}
+
+const examSubjects = {
+  TYT: ['Türkçe', 'Tarih', 'Coğrafya', 'Felsefe', 'Din Kültürü', 'Matematik', 'Geometri', 'Fizik', 'Kimya', 'Biyoloji'],
+  AYT: ['Türk Dili ve Edebiyatı', 'Tarih-1', 'Coğrafya-1', 'Tarih-2', 'Coğrafya-2', 'Felsefe Grubu', 'Din Kültürü', 'Matematik', 'Geometri', 'Fizik', 'Kimya', 'Biyoloji']
+};
+
+let currentExamType = 'AYT';
+
+function renderExamsPage() {
+  switchExamType(currentExamType);
+  loadExams();
+}
+
+function switchExamType(type) {
+  currentExamType = type;
+  document.querySelectorAll('.exam-type-btn').forEach(b => {
+    b.classList.toggle('active', b.id === 'exam-type-' + type.toLowerCase());
+  });
+  renderExamForm();
+  loadExams();
+}
+
+function renderExamForm() {
+  const container = document.getElementById('exam-subject-fields');
+  container.innerHTML = '';
+  const subjects = examSubjects[currentExamType];
+  subjects.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'exam-subject-row';
+    row.innerHTML = `
+      <div class="exam-subject-label">${s}</div>
+      <div class="exam-subject-inputs">
+        <div class="exam-input-group">
+          <span class="exam-input-label correct-label">D</span>
+          <input type="number" class="exam-correct" min="0" value="0" data-subject="${s}" oninput="updateExamNet(this)">
+        </div>
+        <div class="exam-input-group">
+          <span class="exam-input-label wrong-label">Y</span>
+          <input type="number" class="exam-wrong" min="0" value="0" data-subject="${s}" oninput="updateExamNet(this)">
+        </div>
+        <span class="exam-net" id="exam-net-${s.replace(/\s+/g, '-')}">0.00</span>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function updateExamNet(input) {
+  const row = input.closest('.exam-subject-row');
+  const correct = parseInt(row.querySelector('.exam-correct').value) || 0;
+  const wrong = parseInt(row.querySelector('.exam-wrong').value) || 0;
+  const net = correct - wrong * 0.25;
+  const label = row.querySelector('.exam-subject-label').textContent;
+  document.getElementById('exam-net-' + label.replace(/\s+/g, '-')).textContent = net.toFixed(2);
+}
+
+async function saveExam() {
+  const examDate = document.getElementById('exam-date').value;
+  const title = document.getElementById('exam-title').value;
+  if (!examDate) {
+    showMessage('exam-message', 'Lütfen tarih seçin', 'error');
+    return;
+  }
+
+  const rows = document.querySelectorAll('.exam-subject-row');
+  const results = [];
+  rows.forEach(row => {
+    const subject = row.querySelector('.exam-subject-label').textContent;
+    const correct = parseInt(row.querySelector('.exam-correct').value) || 0;
+    const wrong = parseInt(row.querySelector('.exam-wrong').value) || 0;
+    results.push({ subject, correct, wrong });
+  });
+
+  const data = await api('/exams', {
+    method: 'POST',
+    body: JSON.stringify({
+      exam_type: currentExamType,
+      title: title,
+      exam_date: examDate,
+      results: results
+    })
+  });
+
+  if (data.message) {
+    showMessage('exam-message', '✓ ' + data.message, 'success');
+    document.getElementById('exam-date').value = '';
+    document.getElementById('exam-title').value = '';
+    rows.forEach(row => {
+      row.querySelector('.exam-correct').value = 0;
+      row.querySelector('.exam-wrong').value = 0;
+      const s = row.querySelector('.exam-subject-label').textContent;
+      document.getElementById('exam-net-' + s.replace(/\s+/g, '-')).textContent = '0.00';
+    });
+    loadExams();
+  } else {
+    showMessage('exam-message', data.error || 'Kayıt hatası', 'error');
+  }
+}
+
+async function loadExams() {
+  const sort = document.getElementById('exam-sort').value;
+  const data = await api('/exams?type=' + currentExamType + '&sort=' + sort);
+  const list = document.getElementById('exams-list');
+  const empty = document.getElementById('no-exams');
+  list.innerHTML = '';
+
+  if (!data.exams || data.exams.length === 0) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  data.exams.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'exam-history-item';
+    const dateStr = new Date(ex.exam_date + 'T12:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    div.innerHTML = `
+      <div class="exam-history-header" onclick="toggleExamDetail(${ex.id}, this)">
+        <span class="exam-history-title">${dateStr}${ex.title ? ' — ' + ex.title : ''}</span>
+        <span class="exam-history-net">${ex.total_net.toFixed(2)} net</span>
+        <span class="exam-expand-icon">▶</span>
+      </div>
+      <div class="exam-history-detail hidden" id="exam-detail-${ex.id}">
+        <div class="exam-detail-loading">Yükleniyor...</div>
+      </div>
+    `;
+    const hdr = div.querySelector('.exam-history-header');
+    hdr.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON') return;
+      toggleExamDetail(ex.id, this);
+    });
+    list.appendChild(div);
+  });
+}
+
+async function toggleExamDetail(id, headerEl) {
+  const detail = document.getElementById('exam-detail-' + id);
+  const icon = headerEl.querySelector('.exam-expand-icon');
+  const isHidden = detail.classList.contains('hidden');
+
+  if (isHidden) {
+    detail.classList.remove('hidden');
+    icon.textContent = '▼';
+    if (detail.querySelector('.exam-detail-loading')) {
+      const examData = await api('/exams/' + id);
+      if (examData.exam && examData.exam.results) {
+        detail.innerHTML = '';
+        examData.exam.results.forEach(r => {
+          const rdiv = document.createElement('div');
+          rdiv.className = 'exam-detail-row';
+          rdiv.innerHTML = `
+            <span class="exam-detail-subject">${r.subject}</span>
+            <span class="exam-detail-values">
+              <span class="exam-detail-correct">${r.correct}D</span>
+              <span class="exam-detail-wrong">${r.wrong}Y</span>
+              <span class="exam-detail-net">${r.net.toFixed(2)} net</span>
+            </span>
+          `;
+          detail.appendChild(rdiv);
+        });
+        if (currentExamType === 'AYT') {
+          const puanTurleri = calculateAYTPuanTurleri(examData.exam.results);
+          const puanDiv = document.createElement('div');
+          puanDiv.className = 'exam-puan-turleri';
+          puanDiv.innerHTML = `
+            <strong style="display:block;margin-bottom:8px;">Puan Türü Netleri:</strong>
+            <div class="exam-puan-row"><span>Sayısal:</span><span>${puanTurleri.sayisal.toFixed(2)}</span></div>
+            <div class="exam-puan-row"><span>Eşit Ağırlık:</span><span>${puanTurleri.ea.toFixed(2)}</span></div>
+            <div class="exam-puan-row"><span>Sözel:</span><span>${puanTurleri.sozel.toFixed(2)}</span></div>
+          `;
+          detail.appendChild(puanDiv);
+        } else {
+          const totalNet = examData.exam.results.reduce((sum, r) => sum + r.net, 0);
+          const puanDiv = document.createElement('div');
+          puanDiv.className = 'exam-puan-turleri';
+          puanDiv.innerHTML = `
+            <strong style="display:block;margin-bottom:8px;">Toplam Net:</strong>
+            <div class="exam-puan-row"><span>${totalNet.toFixed(2)}</span></div>
+          `;
+          detail.appendChild(puanDiv);
+        }
+        const delBtn = document.createElement('button');
+        delBtn.className = 'danger';
+        delBtn.style.cssText = 'margin-top:12px;font-size:0.85rem;';
+        delBtn.textContent = 'Sil';
+        delBtn.onclick = () => deleteExam(id);
+        detail.appendChild(delBtn);
+      }
+    }
+  } else {
+    detail.classList.add('hidden');
+    icon.textContent = '▶';
+  }
+}
+
+function calculateAYTPuanTurleri(results) {
+  const map = {};
+  results.forEach(r => { map[r.subject] = r.net; });
+  const get = (s) => map[s] || 0;
+  return {
+    sayisal: get('Matematik') + get('Geometri') + get('Fizik') + get('Kimya') + get('Biyoloji'),
+    ea: get('Matematik') + get('Geometri') + get('Türk Dili ve Edebiyatı') + get('Tarih-1') + get('Coğrafya-1'),
+    sozel: get('Türk Dili ve Edebiyatı') + get('Tarih-1') + get('Coğrafya-1') + get('Tarih-2') + get('Coğrafya-2') + get('Felsefe Grubu') + get('Din Kültürü')
+  };
+}
+
+async function deleteExam(id) {
+  if (!confirm('Bu denemeyi silmek istediğinize emin misiniz?')) return;
+  const data = await api('/exams/' + id, { method: 'DELETE' });
+  if (data.message) {
+    loadExams();
+  }
 }
 
 function formatDate(d) {

@@ -11,6 +11,7 @@
     <div class="navbar-brand">YKS Takip</div>
     <div class="navbar-links">
       <a href="#" onclick="showPage('dashboard')">Panel</a>
+      <a href="#" onclick="showPage('exams')">Deneme</a>
       <a href="#" onclick="showPage('calendar')">Takvim</a>
       <a href="#" onclick="showPage('profile')">Profil</a>
       <a href="#" onclick="logout()">Çıkış</a>
@@ -137,6 +138,42 @@
       <div class="card hidden" id="cal-day-detail">
         <h3 id="cal-day-title"></h3>
         <div id="cal-day-content"></div>
+      </div>
+    </div>
+
+    <div id="exams-page" class="hidden">
+      <div class="exam-type-switch">
+        <button id="exam-type-ayt" class="exam-type-btn active" onclick="switchExamType('AYT')">AYT</button>
+        <button id="exam-type-tyt" class="exam-type-btn" onclick="switchExamType('TYT')">TYT</button>
+        <select id="exam-sort" class="exam-sort-select" onchange="loadExams()">
+          <option value="date_desc">Tarih ↓</option>
+          <option value="date_asc">Tarih ↑</option>
+          <option value="net_desc">Net ↓</option>
+          <option value="net_asc">Net ↑</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <h2>Yeni Deneme Girişi</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tarih</label>
+            <input type="date" id="exam-date">
+          </div>
+          <div class="form-group">
+            <label>İsim (opsiyonel)</label>
+            <input type="text" id="exam-title" placeholder="AYT Deneme #1">
+          </div>
+        </div>
+        <div id="exam-subject-fields"></div>
+        <button onclick="saveExam()" style="width:100%;margin-top:12px;">💾 Kaydet</button>
+        <div id="exam-message" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Geçmiş Denemeler</h2>
+        <div id="exams-list"></div>
+        <p id="no-exams" style="color:#888;text-align:center;padding:20px;">Henüz deneme kaydedilmemiş.</p>
       </div>
     </div>
 

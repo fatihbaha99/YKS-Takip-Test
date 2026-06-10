@@ -40,6 +40,24 @@ func RunMigrations() error {
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 		)`,
+		`CREATE TABLE IF NOT EXISTS exams (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER NOT NULL,
+			exam_type TEXT NOT NULL CHECK(exam_type IN ('TYT','AYT')),
+			title TEXT DEFAULT '',
+			exam_date TEXT NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+		)`,
+		`CREATE TABLE IF NOT EXISTS exam_results (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			exam_id INTEGER NOT NULL,
+			subject TEXT NOT NULL,
+			correct INTEGER DEFAULT 0,
+			wrong INTEGER DEFAULT 0,
+			net REAL DEFAULT 0,
+			FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE
+		)`,
 	}
 
 	for _, stmt := range statements {

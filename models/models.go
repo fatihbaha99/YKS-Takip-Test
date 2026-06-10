@@ -38,3 +38,22 @@ type Todo struct {
 	Completed bool      `json:"completed"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type Exam struct {
+	ID        int64         `json:"id"`
+	UserID    int64         `json:"user_id"`
+	ExamType  string        `json:"exam_type"`
+	Title     string        `json:"title"`
+	ExamDate  string        `json:"exam_date"`
+	CreatedAt time.Time     `json:"created_at"`
+	Results   []ExamResult  `json:"results,omitempty"`
+}
+
+type ExamResult struct {
+	ID       int64   `json:"id"`
+	ExamID   int64   `json:"exam_id"`
+	Subject  string  `json:"subject"`
+	Correct  int     `json:"correct"`
+	Wrong    int     `json:"wrong"`
+	Net      float64 `json:"net"`
+}
