@@ -113,9 +113,9 @@ func GetProfile(c *fiber.Ctx) error {
 
 	var user models.User
 	err := database.DB.QueryRow(
-		`SELECT id, name, email, telegram_chat_id, activation_code, created_at, purge_at FROM users WHERE id = ?`,
+		`SELECT id, name, email, telegram_chat_id, activation_code, reminder_hour, reminder_minute, last_reminder_date, created_at, purge_at FROM users WHERE id = ?`,
 		userID,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.TelegramChatID, &user.ActivationCode, &user.CreatedAt, &user.PurgeAt)
+	).Scan(&user.ID, &user.Name, &user.Email, &user.TelegramChatID, &user.ActivationCode, &user.ReminderHour, &user.ReminderMinute, &user.LastReminderDate, &user.CreatedAt, &user.PurgeAt)
 
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": "Kullanıcı bulunamadı"})
@@ -160,6 +160,31 @@ func generateCode() string {
 	bytes := make([]byte, 4)
 	rand.Read(bytes)
 	return hex.EncodeToString(bytes)
+}
+
+func UpdateReminderTime(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(int64)
+
+	var req struct {
+		Hour   int `json:"hour"`
+		Minute int `json:"minute"`
+	}
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz veri"})
+	}
+
+	if req.Hour < 0 || req.Hour > 23 || req.Minute < 0 || req.Minute > 59 {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz saat aralığı"})
+	}
+
+	_, err := database.DB.Exec(`UPDATE users SET reminder_hour = ?, reminder_minute = ? WHERE id = ?`,
+		req.Hour, req.Minute, userID)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Güncellenemedi"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Bildirim saati güncellendi"})
 }
 
 func GenerateAPIKey(c *fiber.Ctx) error {

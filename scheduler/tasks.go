@@ -12,9 +12,11 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+var turkeyLocScheduler = time.FixedZone("TRT", 3*60*60)
+
 func StartNightlyCleanup() {
 	for {
-		now := time.Now()
+		now := time.Now().In(turkeyLocScheduler)
 		next := time.Date(now.Year(), now.Month(), now.Day(), 3, 0, 0, 0, now.Location())
 		if now.After(next) {
 			next = next.AddDate(0, 0, 1)
@@ -141,7 +143,7 @@ func GenerateUserExcel(userID int64) (string, error) {
 		rowIdx++
 	}
 
-	fileName := fmt.Sprintf("yks_veri_%d_%s.xlsx", userID, time.Now().Format("20060102"))
+	fileName := fmt.Sprintf("yks_veri_%d_%s.xlsx", userID, time.Now().In(turkeyLocScheduler).Format("20060102"))
 	if err := f.SaveAs(fileName); err != nil {
 		return "", err
 	}

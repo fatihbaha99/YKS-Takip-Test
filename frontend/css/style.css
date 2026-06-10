@@ -514,6 +514,49 @@ button.success:hover { background: #218838; }
   padding: 4px 0;
 }
 
+.bot-commands {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bot-cmd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.bot-cmd code {
+  background: #e8ecf4;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a6cf7;
+  min-width: 150px;
+}
+
+.bot-cmd span {
+  color: #555;
+}
+
+.reminder-time-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reminder-time-row input[type="time"] {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
 @media (max-width: 600px) {
   .form-row { grid-template-columns: 1fr; }
   .navbar { flex-direction: column; gap: 8px; }

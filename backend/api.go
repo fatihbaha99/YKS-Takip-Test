@@ -19,6 +19,7 @@ func SetupRoutes(app *fiber.App) {
 	protected.Get("/profile", GetProfile)
 	protected.Post("/auth/activation-code", GenerateActivationCode)
 	protected.Post("/auth/disconnect-telegram", DisconnectTelegram)
+	protected.Post("/profile/reminder-time", UpdateReminderTime)
 
 	protected.Post("/study", RecordStudy)
 	protected.Get("/todos/today", GetTodayTodos)

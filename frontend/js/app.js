@@ -56,7 +56,7 @@ async function register() {
   }
 }
 
-const pageIds = ['dashboard', 'exams', 'calendar', 'profile'];
+const pageIds = ['dashboard', 'exams', 'calendar', 'telegram', 'profile'];
 
 function logout() {
   localStorage.removeItem('token');
@@ -74,6 +74,7 @@ function showPage(page) {
   if (page === 'dashboard') loadTodos();
   if (page === 'exams') renderExamsPage();
   if (page === 'calendar') renderCalendar();
+  if (page === 'telegram') renderTelegramPage();
   if (page === 'profile') loadProfile();
 }
 
@@ -219,19 +220,16 @@ async function loadProfile() {
       <p><strong>Silinme:</strong> ${formatDate(u.purge_at)}</p>
       <p><strong>Telegram:</strong> ${(u.telegram_chat_id || 0) > 0 ? 'Bağlı' : 'Bağlı değil'}</p>
     `;
-    const hasTelegram = (u.telegram_chat_id || 0) > 0;
-    document.getElementById('activation-code').textContent = u.activation_code || (hasTelegram ? 'Bağlı (kod gizli)' : 'Kod oluşturun');
-    document.getElementById('disconnect-telegram-btn').style.display = hasTelegram ? 'inline-block' : 'none';
   }
 }
 
 async function disconnectTelegram() {
   const data = await api('/auth/disconnect-telegram', { method: 'POST' });
   if (data.message) {
-    showMessage('profile-message', '✓ Telegram bağlantısı kesildi', 'success');
-    loadProfile();
+    showMessage('telegram-message', '✓ Telegram bağlantısı kesildi', 'success');
+    renderTelegramPage();
   } else {
-    showMessage('profile-message', data.error || 'Hata', 'error');
+    showMessage('telegram-message', data.error || 'Hata', 'error');
   }
 }
 
@@ -239,7 +237,7 @@ async function generateActivationCode() {
   const data = await api('/auth/activation-code', { method: 'POST' });
   if (data.activation_code) {
     document.getElementById('activation-code').textContent = data.activation_code;
-    showMessage('profile-message', '✓ Aktivasyon kodu oluşturuldu', 'success');
+    showMessage('telegram-message', '✓ Aktivasyon kodu oluşturuldu', 'success');
   }
 }
 
@@ -658,6 +656,33 @@ async function deleteExam(id) {
   const data = await api('/exams/' + id, { method: 'DELETE' });
   if (data.message) {
     loadExams();
+  }
+}
+
+async function renderTelegramPage() {
+  const data = await api('/profile');
+  if (!data.user) return;
+  const u = data.user;
+  const hasTelegram = (u.telegram_chat_id || 0) > 0;
+  document.getElementById('activation-code').textContent = u.activation_code || (hasTelegram ? 'Bağlı (kod gizli)' : 'Kod oluşturun');
+  document.getElementById('disconnect-telegram-btn').style.display = hasTelegram ? 'inline-block' : 'none';
+  const hour = String(u.reminder_hour || 8).padStart(2, '0');
+  const minute = String(u.reminder_minute || 0).padStart(2, '0');
+  document.getElementById('reminder-time').value = hour + ':' + minute;
+}
+
+async function updateReminderTime() {
+  const val = document.getElementById('reminder-time').value;
+  if (!val) { showMessage('reminder-message', 'Lütfen saat seçin', 'error'); return; }
+  const parts = val.split(':');
+  const data = await api('/profile/reminder-time', {
+    method: 'POST',
+    body: JSON.stringify({ hour: parseInt(parts[0]), minute: parseInt(parts[1]) })
+  });
+  if (data.message) {
+    showMessage('reminder-message', '✓ ' + data.message, 'success');
+  } else {
+    showMessage('reminder-message', data.error || 'Hata', 'error');
   }
 }
 

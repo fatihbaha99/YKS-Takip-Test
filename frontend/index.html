@@ -13,6 +13,7 @@
       <a href="#" onclick="showPage('dashboard')">Panel</a>
       <a href="#" onclick="showPage('exams')">Deneme</a>
       <a href="#" onclick="showPage('calendar')">Takvim</a>
+      <a href="#" onclick="showPage('telegram')">Telegram Bot</a>
       <a href="#" onclick="showPage('profile')">Profil</a>
       <a href="#" onclick="logout()">Çıkış</a>
     </div>
@@ -177,19 +178,55 @@
       </div>
     </div>
 
+    <div id="telegram-page" class="hidden">
+      <div class="card">
+        <h2>🤖 Telegram Bot Bağlantısı</h2>
+        <div style="margin-bottom:16px;">
+          <p style="margin-bottom:8px;"><strong>Bağlanmak İçin:</strong></p>
+          <ol style="margin-left:20px;line-height:1.8;color:#555;">
+            <li>Telegram'da <strong>@yks_takip_bot</strong>'u bulun</li>
+            <li><code>/start</code> yazın</li>
+            <li>Aşağıdaki kodu <code>/aktifkod KODUNUZ</code> şeklinde gönderin</li>
+          </ol>
+        </div>
+        <div class="activation-code" id="activation-code">********</div>
+        <button onclick="generateActivationCode()">Yeni Kod Oluştur</button>
+        <button class="danger" id="disconnect-telegram-btn" style="display:none;margin-top:8px;" onclick="disconnectTelegram()">Telegram Bağlantısını Kes</button>
+        <div id="telegram-message"></div>
+      </div>
+
+      <div class="card">
+        <h2>⏰ Bildirim Saati</h2>
+        <p style="margin-bottom:12px;color:#666;">Günlük hatırlatma mesajının gönderileceği saati ayarlayın.</p>
+        <div class="reminder-time-row">
+          <input type="time" id="reminder-time" value="08:00" style="width:auto;">
+          <button onclick="updateReminderTime()">Kaydet</button>
+        </div>
+        <div id="reminder-message"></div>
+      </div>
+
+      <div class="card">
+        <h2>📋 Komutlar</h2>
+        <div class="bot-commands">
+          <div class="bot-cmd"><code>/start</code><span>Hoş geldin mesajı</span></div>
+          <div class="bot-cmd"><code>/help</code><span>Yardım</span></div>
+          <div class="bot-cmd"><code>/aktifkod KOD</code><span>Botu web panel ile eşleştir</span></div>
+          <div class="bot-cmd"><code>/bugun</code><span>Bugünkü görevleri listele</span></div>
+          <div class="bot-cmd"><code>/haftalik</code><span>7 günlük görev takvimi</span></div>
+          <div class="bot-cmd"><code>/calistim</code><span>Adım adım çalışma kaydet</span></div>
+          <div class="bot-cmd"><code>/tamamla ID</code><span>Görevi tamamla</span></div>
+          <div class="bot-cmd"><code>/botbaglantikes</code><span>Bağlantıyı kes</span></div>
+          <div class="bot-cmd"><code>/iptal</code><span>İşlemi iptal et</span></div>
+        </div>
+      </div>
+    </div>
+
     <div id="profile-page" class="hidden">
       <div class="card">
         <h2>Profil Bilgileri</h2>
         <div class="profile-info" id="profile-info"></div>
       </div>
       <div id="profile-message"></div>
-      <div class="card">
-        <h2>Telegram Bot Aktivasyon</h2>
-        <p style="margin-bottom:12px;color:#666;">Botu aktifleştirmek için aşağıdaki kodu Telegram botuna gönderin.</p>
-        <div class="activation-code" id="activation-code">********</div>
-        <button onclick="generateActivationCode()">Yeni Kod Oluştur</button>
-        <button class="danger" id="disconnect-telegram-btn" style="display:none;margin-top:8px;" onclick="disconnectTelegram()">Telegram Bağlantısını Kes</button>
-      </div>
     </div>
   </div>
 

@@ -15,6 +15,7 @@ import (
 )
 
 var Bot *tgbotapi.BotAPI
+var turkeyLoc = time.FixedZone("TRT", 3*60*60)
 
 var subjectsData = map[string]map[string][]string{
 	"TYT": {
@@ -300,7 +301,7 @@ func handleStudyFlowInput(chatID int64, text string) {
 }
 
 func saveStudyFromFlow(chatID int64, flow *StudyFlow) {
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().In(turkeyLoc).Format("2006-01-02")
 	var net float64
 	if flow.StudyType != "goz_gezdir" {
 		net = float64(flow.Correct) - float64(flow.Wrong)*0.25
@@ -340,7 +341,7 @@ func saveStudyFromFlow(chatID int64, flow *StudyFlow) {
 }
 
 func sendTodayTodos(chatID int64) {
-	today := time.Now().Format("2006-01-02")
+	today := time.Now().In(turkeyLoc).Format("2006-01-02")
 	rows, err := database.DB.Query(`
 		SELECT t.id, t.subject, t.topic, t.todo_type FROM todos t
 		JOIN users u ON u.id = t.user_id
@@ -379,7 +380,7 @@ func sendTodayTodos(chatID int64) {
 }
 
 func sendWeeklyTodos(chatID int64) {
-	today := time.Now()
+	today := time.Now().In(turkeyLoc)
 	weekLater := today.AddDate(0, 0, 7)
 	todayStr := today.Format("2006-01-02")
 	weekLaterStr := weekLater.Format("2006-01-02")
@@ -474,7 +475,7 @@ func completeTodoTelegram(chatID int64, todoID int64) {
 }
 
 func createSpacedRepetitionTodosFromBot(userID int64, subject, topic string) {
-	now := time.Now()
+	now := time.Now().In(turkeyLoc)
 	intervals := []struct {
 		days int
 		typ  string
@@ -535,31 +536,47 @@ func sendMessage(chatID int64, text string) {
 
 func startDailyReminder() {
 	for {
-		now := time.Now()
-		next := time.Date(now.Year(), now.Month(), now.Day(), 8, 0, 0, 0, now.Location())
-		if now.After(next) {
-			next = next.AddDate(0, 0, 1)
+		now := time.Now().In(turkeyLoc)
+		today := now.Format("2006-01-02")
+
+		rows, err := database.DB.Query(`
+			SELECT id, telegram_chat_id, reminder_hour, reminder_minute, last_reminder_date
+			FROM users WHERE telegram_chat_id > 0 AND active = 1
+		`)
+		if err == nil {
+			for rows.Next() {
+				var userID, chatID int64
+				var hour, minute int
+				var lastDate string
+				if err := rows.Scan(&userID, &chatID, &hour, &minute, &lastDate); err != nil {
+					continue
+				}
+				if now.Hour() == hour && now.Minute() == minute && lastDate != today {
+					sendDailyTodosToUser(chatID)
+					database.DB.Exec(`UPDATE users SET last_reminder_date = ? WHERE id = ?`, today, userID)
+				}
+			}
+			rows.Close()
 		}
-		time.Sleep(time.Until(next))
-		sendDailyTodos()
+
+		time.Sleep(30 * time.Second)
 	}
 }
 
-func sendDailyTodos() {
-	today := time.Now().Format("2006-01-02")
+func sendDailyTodosToUser(chatID int64) {
+	today := time.Now().In(turkeyLoc).Format("2006-01-02")
 
-	rows, err := database.DB.Query(`
-		SELECT u.telegram_chat_id, t.id, t.subject, t.topic, t.todo_type
-		FROM todos t
+	trows, err := database.DB.Query(`
+		SELECT t.id, t.subject, t.topic, t.todo_type FROM todos t
 		JOIN users u ON u.id = t.user_id
-		WHERE t.due_date <= ? AND t.completed = 0 AND u.telegram_chat_id > 0 AND u.active = 1
-		ORDER BY u.telegram_chat_id
-	`, today)
+		WHERE u.telegram_chat_id = ? AND t.due_date <= ? AND t.completed = 0
+		ORDER BY t.due_date ASC
+	`, chatID, today)
 	if err != nil {
 		log.Printf("[Bot] Günlük görev sorgu hatası: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer trows.Close()
 
 	type Task struct {
 		ID       int64
@@ -568,15 +585,17 @@ func sendDailyTodos() {
 		TodoType string
 	}
 
-	userTasks := make(map[int64][]Task)
-
-	for rows.Next() {
-		var chatID int64
+	var tasks []Task
+	for trows.Next() {
 		var t Task
-		if err := rows.Scan(&chatID, &t.ID, &t.Subject, &t.Topic, &t.TodoType); err != nil {
+		if err := trows.Scan(&t.ID, &t.Subject, &t.Topic, &t.TodoType); err != nil {
 			continue
 		}
-		userTasks[chatID] = append(userTasks[chatID], t)
+		tasks = append(tasks, t)
+	}
+
+	if len(tasks) == 0 {
+		return
 	}
 
 	labelMap := map[string]string{
@@ -585,16 +604,14 @@ func sendDailyTodos() {
 		"genel_test": "Genel Test",
 	}
 
-	for chatID, tasks := range userTasks {
-		msg := "Günaydın! Bugün yapman gerekenler:\n\n"
-		for _, t := range tasks {
-			label := labelMap[t.TodoType]
-			if label == "" {
-				label = t.TodoType
-			}
-			msg += fmt.Sprintf("[%d] %s - %s (%s)\n", t.ID, t.Subject, t.Topic, label)
+	msg := "Günaydın! Bugün yapman gerekenler:\n\n"
+	for _, t := range tasks {
+		label := labelMap[t.TodoType]
+		if label == "" {
+			label = t.TodoType
 		}
-		msg += "\nTamamlamak için: /tamamla ID"
-		sendMessage(chatID, msg)
+		msg += fmt.Sprintf("[%d] %s - %s (%s)\n", t.ID, t.Subject, t.Topic, label)
 	}
+	msg += "\nTamamlamak için: /tamamla ID"
+	sendMessage(chatID, msg)
 }

@@ -7,11 +7,14 @@ type User struct {
 	Name           string    `json:"name"`
 	Email          string    `json:"email"`
 	PasswordHash   string    `json:"-"`
-	TelegramChatID int64     `json:"telegram_chat_id,omitempty"`
-	ActivationCode string    `json:"activation_code,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
-	PurgeAt        time.Time `json:"purge_at"`
-	Active         bool      `json:"active"`
+	TelegramChatID    int64     `json:"telegram_chat_id,omitempty"`
+	ActivationCode    string    `json:"activation_code,omitempty"`
+	ReminderHour      int       `json:"reminder_hour"`
+	ReminderMinute    int       `json:"reminder_minute"`
+	LastReminderDate  string    `json:"last_reminder_date,omitempty"`
+	CreatedAt         time.Time `json:"created_at"`
+	PurgeAt           time.Time `json:"purge_at"`
+	Active            bool      `json:"active"`
 }
 
 type StudySession struct {

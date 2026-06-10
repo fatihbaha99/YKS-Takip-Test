@@ -66,6 +66,15 @@ func RunMigrations() error {
 		}
 	}
 
+	alterStatements := []string{
+		"ALTER TABLE users ADD COLUMN reminder_hour INTEGER DEFAULT 8",
+		"ALTER TABLE users ADD COLUMN reminder_minute INTEGER DEFAULT 0",
+		"ALTER TABLE users ADD COLUMN last_reminder_date TEXT DEFAULT ''",
+	}
+	for _, stmt := range alterStatements {
+		DB.Exec(stmt)
+	}
+
 	log.Println("[DB] Migrationlar tamamlandı")
 	return nil
 }
