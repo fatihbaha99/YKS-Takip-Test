@@ -440,6 +440,7 @@ function switchExamType(type) {
 function renderExamForm() {
   const container = document.getElementById('exam-subject-fields');
   container.innerHTML = '';
+  document.getElementById('exam-date').value = new Date().toISOString().slice(0, 10);
   const maxQ = examMaxQuestions[currentExamType];
   subjects.forEach(s => {
     const row = document.createElement('div');
@@ -468,13 +469,13 @@ function updateExamNet(input) {
   const correct = parseInt(row.querySelector('.exam-correct').value) || 0;
   const wrong = parseInt(row.querySelector('.exam-wrong').value) || 0;
   const net = correct - wrong * 0.25;
-  const label = row.querySelector('.exam-subject-label').textContent;
-  document.getElementById('exam-net-' + label.replace(/\s+/g, '-')).textContent = net.toFixed(2);
+  const subj = input.dataset.subject;
+  document.getElementById('exam-net-' + subj.replace(/\s+/g, '-')).textContent = net.toFixed(2);
 
   const maxQ = examMaxQuestions[currentExamType];
-  const max = maxQ[label] || 999;
+  const max = maxQ[subj] || 999;
   const total = correct + wrong;
-  const errEl = document.getElementById('exam-err-' + label.replace(/\s+/g, '-'));
+  const errEl = document.getElementById('exam-err-' + subj.replace(/\s+/g, '-'));
   const inputs = row.querySelectorAll('input');
   if (total > max) {
     errEl.textContent = '⚠ Toplam ' + max + ' soruyu aştı!';
@@ -501,14 +502,15 @@ async function saveExam() {
   let hasError = false;
 
   rows.forEach(row => {
-    const label = row.querySelector('.exam-subject-label').textContent;
-    const correct = parseInt(row.querySelector('.exam-correct').value) || 0;
+    const correctInput = row.querySelector('.exam-correct');
+    const subj = correctInput.dataset.subject;
+    const correct = parseInt(correctInput.value) || 0;
     const wrong = parseInt(row.querySelector('.exam-wrong').value) || 0;
-    const max = maxQ[label] || 999;
+    const max = maxQ[subj] || 999;
     if (correct + wrong > max) {
       hasError = true;
     }
-    results.push({ subject: label, correct, wrong });
+    results.push({ subject: subj, correct, wrong });
   });
 
   if (hasError) {
@@ -528,13 +530,14 @@ async function saveExam() {
 
   if (data.message) {
     showMessage('exam-message', '✓ ' + data.message, 'success');
-    document.getElementById('exam-date').value = '';
+    document.getElementById('exam-date').value = new Date().toISOString().slice(0, 10);
     document.getElementById('exam-title').value = '';
     rows.forEach(row => {
-      row.querySelector('.exam-correct').value = 0;
+      const correctInput = row.querySelector('.exam-correct');
+      const subj = correctInput.dataset.subject;
+      correctInput.value = 0;
       row.querySelector('.exam-wrong').value = 0;
-      const s = row.querySelector('.exam-subject-label').textContent;
-      document.getElementById('exam-net-' + s.replace(/\s+/g, '-')).textContent = '0.00';
+      document.getElementById('exam-net-' + subj.replace(/\s+/g, '-')).textContent = '0.00';
     });
     loadExams();
   } else {
