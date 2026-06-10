@@ -82,7 +82,8 @@ function initApp() {
   document.getElementById('navbar').classList.remove('hidden');
   document.getElementById('auth-page').classList.add('hidden');
   initSubjects();
-  showPage('dashboard');
+  const lastPage = localStorage.getItem('lastPage');
+  showPage(pageIds.includes(lastPage) ? lastPage : 'dashboard');
 }
 
 function initSubjects() {
