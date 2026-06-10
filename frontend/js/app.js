@@ -411,6 +411,18 @@ const examSubjects = {
 
 let currentExamType = 'AYT';
 
+const examMaxQuestions = {
+  TYT: {
+    'Türkçe': 40, 'Tarih': 5, 'Coğrafya': 5, 'Felsefe': 5, 'Din Kültürü': 5,
+    'Matematik': 30, 'Geometri': 10, 'Fizik': 7, 'Kimya': 7, 'Biyoloji': 6
+  },
+  AYT: {
+    'Türk Dili ve Edebiyatı': 24, 'Tarih-1': 10, 'Coğrafya-1': 6,
+    'Tarih-2': 11, 'Coğrafya-2': 11, 'Felsefe Grubu': 12, 'Din Kültürü': 6,
+    'Matematik': 30, 'Geometri': 10, 'Fizik': 14, 'Kimya': 13, 'Biyoloji': 13
+  }
+};
+
 function renderExamsPage() {
   switchExamType(currentExamType);
   loadExams();
@@ -428,23 +440,24 @@ function switchExamType(type) {
 function renderExamForm() {
   const container = document.getElementById('exam-subject-fields');
   container.innerHTML = '';
-  const subjects = examSubjects[currentExamType];
+  const maxQ = examMaxQuestions[currentExamType];
   subjects.forEach(s => {
     const row = document.createElement('div');
     row.className = 'exam-subject-row';
     row.innerHTML = `
-      <div class="exam-subject-label">${s}</div>
+      <div class="exam-subject-label">${s} <span class="exam-max-q">/ ${maxQ[s]}</span></div>
       <div class="exam-subject-inputs">
         <div class="exam-input-group">
           <span class="exam-input-label correct-label">D</span>
-          <input type="number" class="exam-correct" min="0" value="0" data-subject="${s}" oninput="updateExamNet(this)">
+          <input type="number" class="exam-correct" min="0" max="${maxQ[s]}" value="0" data-subject="${s}" oninput="updateExamNet(this)">
         </div>
         <div class="exam-input-group">
           <span class="exam-input-label wrong-label">Y</span>
-          <input type="number" class="exam-wrong" min="0" value="0" data-subject="${s}" oninput="updateExamNet(this)">
+          <input type="number" class="exam-wrong" min="0" max="${maxQ[s]}" value="0" data-subject="${s}" oninput="updateExamNet(this)">
         </div>
         <span class="exam-net" id="exam-net-${s.replace(/\s+/g, '-')}">0.00</span>
       </div>
+      <div class="exam-error-msg" id="exam-err-${s.replace(/\s+/g, '-')}"></div>
     `;
     container.appendChild(row);
   });
@@ -457,6 +470,21 @@ function updateExamNet(input) {
   const net = correct - wrong * 0.25;
   const label = row.querySelector('.exam-subject-label').textContent;
   document.getElementById('exam-net-' + label.replace(/\s+/g, '-')).textContent = net.toFixed(2);
+
+  const maxQ = examMaxQuestions[currentExamType];
+  const max = maxQ[label] || 999;
+  const total = correct + wrong;
+  const errEl = document.getElementById('exam-err-' + label.replace(/\s+/g, '-'));
+  const inputs = row.querySelectorAll('input');
+  if (total > max) {
+    errEl.textContent = '⚠ Toplam ' + max + ' soruyu aştı!';
+    errEl.style.display = 'block';
+    inputs.forEach(i => i.style.borderColor = '#dc3545');
+  } else {
+    errEl.textContent = '';
+    errEl.style.display = 'none';
+    inputs.forEach(i => i.style.borderColor = '');
+  }
 }
 
 async function saveExam() {
@@ -468,13 +496,25 @@ async function saveExam() {
   }
 
   const rows = document.querySelectorAll('.exam-subject-row');
+  const maxQ = examMaxQuestions[currentExamType];
   const results = [];
+  let hasError = false;
+
   rows.forEach(row => {
-    const subject = row.querySelector('.exam-subject-label').textContent;
+    const label = row.querySelector('.exam-subject-label').textContent;
     const correct = parseInt(row.querySelector('.exam-correct').value) || 0;
     const wrong = parseInt(row.querySelector('.exam-wrong').value) || 0;
-    results.push({ subject, correct, wrong });
+    const max = maxQ[label] || 999;
+    if (correct + wrong > max) {
+      hasError = true;
+    }
+    results.push({ subject: label, correct, wrong });
   });
+
+  if (hasError) {
+    showMessage('exam-message', '⚠ Bazı derslerde soru sayısı aşıldı. Lütfen düzeltin.', 'error');
+    return;
+  }
 
   const data = await api('/exams', {
     method: 'POST',
@@ -520,7 +560,7 @@ async function loadExams() {
     div.className = 'exam-history-item';
     const dateStr = new Date(ex.exam_date + 'T12:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
     div.innerHTML = `
-      <div class="exam-history-header" onclick="toggleExamDetail(${ex.id}, this)">
+      <div class="exam-history-header">
         <span class="exam-history-title">${dateStr}${ex.title ? ' — ' + ex.title : ''}</span>
         <span class="exam-history-net">${ex.total_net.toFixed(2)} net</span>
         <span class="exam-expand-icon">▶</span>

@@ -374,6 +374,20 @@ button.success:hover { background: #218838; }
   flex-shrink: 0;
 }
 
+.exam-max-q {
+  font-weight: 400;
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.exam-error-msg {
+  color: #dc3545;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 2px;
+  display: none;
+}
+
 .exam-subject-inputs {
   display: flex;
   align-items: center;
