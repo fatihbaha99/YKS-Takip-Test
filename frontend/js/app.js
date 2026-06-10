@@ -441,6 +441,7 @@ function renderExamForm() {
   const container = document.getElementById('exam-subject-fields');
   container.innerHTML = '';
   document.getElementById('exam-date').value = new Date().toISOString().slice(0, 10);
+  const subjects = examSubjects[currentExamType];
   const maxQ = examMaxQuestions[currentExamType];
   subjects.forEach(s => {
     const row = document.createElement('div');
