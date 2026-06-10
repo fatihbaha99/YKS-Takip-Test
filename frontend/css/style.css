@@ -558,10 +558,32 @@ button.success:hover { background: #218838; }
 }
 
 @media (max-width: 600px) {
+  .container { padding: 12px; }
+  .card { padding: 16px; }
+  .navbar { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 10px 12px; }
+  .navbar-links a { margin: 0 6px; font-size: 0.8rem; }
   .form-row { grid-template-columns: 1fr; }
-  .navbar { flex-direction: column; gap: 8px; }
-  .navbar-links a { margin: 0 10px; }
-  .exam-subject-label { width: 100px; font-size: 0.8rem; }
-  .exam-input-group input { width: 48px; }
-  .exam-net { width: 55px; font-size: 0.8rem; }
+  button { min-height: 44px; }
+  .exam-subject-row { flex-direction: column; align-items: stretch; gap: 4px; }
+  .exam-subject-label { width: auto; }
+  .exam-subject-inputs { justify-content: flex-start; }
+  .exam-input-group input { width: 52px; }
+  .exam-net { width: auto; }
+  .exam-type-switch { flex-wrap: wrap; }
+  .exam-sort-select { width: 100%; margin: 8px 0 0 0; }
+  .exam-history-title { font-size: 0.85rem; }
+  .exam-detail-row { flex-direction: column; gap: 4px; }
+  .exam-detail-values { width: 100%; justify-content: space-between; }
+  .bot-cmd { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .bot-cmd code { min-width: auto; width: 100%; }
+  .reminder-time-row { flex-direction: column; align-items: stretch; }
+  .reminder-time-row input[type="time"] { width: 100%; }
+  .cal-day { font-size: 0.75rem; }
+  .cal-day .day-stats { font-size: 0.5rem; }
+  .test-inputs { flex-direction: column; gap: 8px; }
+  .test-inputs input { width: 100%; }
+}
+
+@media (max-width: 400px) {
+  .navbar-links a { font-size: 0.75rem; margin: 0 4px; }
 }
